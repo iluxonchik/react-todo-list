@@ -12,10 +12,12 @@ class TodoListDashboard extends React.Component {
           title: 'List 1',
           items: [
             {
+              id: uuid(),
               title: 'ToDo Item 1',
               isDone: false,
             },
             {
+              id: uuid(),
               title: 'ToDo Item 2',
               isDone: true,
             }
@@ -26,10 +28,12 @@ class TodoListDashboard extends React.Component {
           title: 'List 2',
           items: [
             {
+              id : uuid(),
               title: 'ToDo Item 1',
               isDone: true,
             },
             {
+              id: uuid(),
               title: 'ToDo Item 2',
               isDone: true,
             }
@@ -39,6 +43,8 @@ class TodoListDashboard extends React.Component {
     }
 
     this.handleAddNewList = this.handleAddNewList.bind(this);
+    this.handleAddNewItemToList = this.handleAddNewItemToList.bind(this);
+    this.handleUpdateItemOnList = this.handleUpdateItemOnList.bind(this);
 
   }
 
@@ -55,12 +61,51 @@ class TodoListDashboard extends React.Component {
      this.setState({lists: listsWithNewList});
   }
 
+  handleAddNewItemToList(listId, newItemText) {
+    console.log("Adding new item with text '" + newItemText + "' to list with ID '" + listId + "'")
+    const updatedTodoListList = this.state.lists.map((list) => {
+      if (list.id === listId) {
+        const items = [...list.items]
+        items.push({
+            id: uuid(),
+            title: newItemText,
+            isDone: false
+        });
+        list.items = items;
+      }
+        return list;
+    });
+
+    this.setState({lists: updatedTodoListList});
+  }
+
+  handleUpdateItemOnList(listId, itemId, itemText, isDone) {
+    const updatedTodoListList = this.state.lists.map((list) => 
+    {
+      if (list.id === listId) {
+        const updatedListItems = list.items.map((item) => {
+          if (item.id === itemId) {
+            item.title = itemText;
+            item.isDone = isDone;
+          }
+            return item;
+        })
+        list.items = updatedListItems;
+      } 
+        return list;
+    });
+
+    this.setState({lists: updatedTodoListList});
+  }
+
   render() {
     console.log(this.state.lists)
     return (
       <TodoListHolder 
         lists={this.state.lists}
         onAddNewList={this.handleAddNewList}
+        onAddNewItemToList={this.handleAddNewItemToList}
+        onUpdateItemOnList={this.handleUpdateItemOnList}
        />
     );
   }
@@ -93,6 +138,8 @@ class TodoListHolder extends React.Component {
         key={list.id}
         title={list.title}
         items={list.items}
+        onAddNewItemToList={this.props.onAddNewItemToList}
+        onUpdateItemOnList={this.props.onUpdateItemOnList}
       />
     ));
     return (
@@ -157,8 +204,12 @@ class TodoList extends React.Component {
     console.log(this.props.title);
     const listItems = this.props.items.map((item) => (
       <ToggleableTodoListItem
+        listId={this.props.id}
+        itemId={item.id}
         title={item.title}
         isDone={item.isDone}
+        onUpdateItemOnList={this.props.onUpdateItemOnList}
+        onAddNewItemToList={this.props.onAddNewItemToList}
       />
     ));
     const listStyle = {
@@ -175,7 +226,10 @@ class TodoList extends React.Component {
         <div className="ui list">
           {listItems}
         </div>
-        <ToggleableNewTodoListItem />
+        <ToggleableNewTodoListItem
+          listId={this.props.id}
+          onAddNewItemToList={this.props.onAddNewItemToList}
+        />
       </div>
      </div>
     )
@@ -189,19 +243,26 @@ class ToggleableTodoListItem extends React.Component {
     this.state = {
       isEditing: false
     }
+
   }
 
   render() {
     if (this.state.isEditing) {
       return (
         <EditingTodoListItem
+          listId={this.props.id}
+          itemId={this.props.itemId}
           title={this.props.title}
           showDelete={true}
+          onUpdateItemOnList={this.props.onUpdateItemOnList}
+          onAddNewItemToList={this.props.onAddNewItemToList}
         />
       );
     } else {
       return (
         <PlainTodoListItem
+          listid={this.props.listId}
+          itemId={this.props.itemId}
           title={this.props.title}
           isDone={this.props.isDone}
         />
@@ -217,18 +278,32 @@ class ToggleableNewTodoListItem extends React.Component {
     this.state = {
       isOpen: false
     }
+
+    this.toggleAddItemButton = this.toggleAddItemButton.bind(this);
+    this.handleAddNewItemToList = this.handleAddNewItemToList.bind(this);
+  }
+
+  handleAddNewItemToList(listId, itemText) {
+    this.toggleAddItemButton()
+    this.props.onAddNewItemToList(listId, itemText)
+  }
+
+  toggleAddItemButton() {
+    this.setState({isOpen: !this.state.isOpen})
   }
 
   render() {
     if (this.state.isOpen) {
       return (
-        <EditingTodoListItem 
+        <EditingTodoListItem
+          listId={this.props.listId} 
           showDelete={false}
+          onAddNewItemToList={this.handleAddNewItemToList}
         />
       )
     } else {
       return(
-        <button className="positive ui button">
+        <button className="positive ui button" onClick={this.toggleAddItemButton}>
           <i className="plus square icon"></i>
         </button>
       );
@@ -240,13 +315,20 @@ class EditingTodoListItem extends React.Component {
   constructor(props) {
     super(props);
 
+    this._handleKeyDown = this._handleKeyDown.bind(this);
+  }
+
+  _handleKeyDown(e) {
+    if (e.key === 'Enter') {
+      this.props.onAddNewItemToList(this.props.listId, this.refs.itemTitle.value)
+    }
   }
 
   render() {
     const deleteIcon = this.props.showDelete ? <i className="delete icon" /> : null
     return (
       <div className="ui input focus">
-        <input type="text" text={this.props.title} /> {deleteIcon}
+        <input type="text" ref="itemTitle" onKeyDown={this._handleKeyDown} text={this.props.title} /> {deleteIcon}
       </div>
     );
   }
