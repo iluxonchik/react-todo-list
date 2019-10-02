@@ -46,7 +46,6 @@ class TodoListDashboard extends React.Component {
     this.handleAddNewItemToList = this.handleAddNewItemToList.bind(this);
     this.handleUpdateItemOnList = this.handleUpdateItemOnList.bind(this);
     this.handleDeleteListItem = this.handleDeleteListItem.bind(this);
-
   }
 
   handleAddNewList(newListTitle) {
@@ -297,7 +296,7 @@ class ToggleableTodoListItem extends React.Component {
   }
 
   handleUpdateItemOnList(listId, itemId, itemText) {
-    this.props.onUpdateItemOnList(listId, itemId, itemText, null)
+    this.props.onUpdateItemOnList(listId, itemId, itemText)
     this.setState({isEditing: false});
   }
 
@@ -416,8 +415,8 @@ class PlainTodoListItem extends React.Component {
   render() {
     const titleText = this.props.isDone?<s>{this.props.title}</s>:this.props.title
     return (
-      <div className="item" onClick={this.onListItemClick}>
-        {titleText}
+      <div className="item">
+        <span onClick={this.onListItemClick}>{titleText}</span>
         <span><i className="edit icon" style={{marginLeft: "5pt"}} onClick={this.props.onEditListItemClick}/> <i className="trash icon" onClick={this.onDeleteListItemClick}/></span>
       </div>
     );
