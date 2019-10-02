@@ -49,6 +49,10 @@ class TodoListDashboard extends React.Component {
   }
 
   handleAddNewList(newListTitle) {
+    if (!newListTitle) {
+      return;
+    }
+
      let listsWithNewList = [...this.state.lists]
 
      const newList = {
@@ -63,6 +67,11 @@ class TodoListDashboard extends React.Component {
 
   handleAddNewItemToList(listId, newItemText) {
     console.log("Adding new item with text '" + newItemText + "' to list with ID '" + listId + "'")
+
+    if(!newItemText) {
+      return;
+    }
+
     const updatedTodoListList = this.state.lists.map((list) => {
       if (list.id === listId) {
         const items = [...list.items]
@@ -81,6 +90,11 @@ class TodoListDashboard extends React.Component {
 
   handleUpdateItemOnList(listId, itemId, itemText, isDone) {
     console.log(`Updating item with id ${itemId} in list with id ${listId}... Setting text to ${itemText} and isDone is ${isDone}`)
+    
+    if(!itemText) {
+      return;
+    }
+    
     const updatedTodoListList = this.state.lists.map((list) => 
     {
       if (list.id === listId) {
@@ -345,10 +359,9 @@ class EditingTodoListItem extends React.Component {
   }
 
   render() {
-    const deleteIcon = this.props.showDelete ? <i className="delete icon" /> : null
     return (
       <div className="ui input focus">
-        <input type="text" ref="itemTitle" onKeyDown={this._handleKeyDown} defaultValue={this.props.title} /> {deleteIcon}
+        <input type="text" ref="itemTitle" onKeyDown={this._handleKeyDown} defaultValue={this.props.title} />
       </div>
     );
   }
@@ -363,7 +376,7 @@ class PlainTodoListItem extends React.Component {
     return (
       <div className="item">
         {this.props.title}
-        <i className="edit icon" style={{marginLeft: "5pt"}} onClick={this.props.onEditListItemClick}/>
+        <span><i className="edit icon" style={{marginLeft: "5pt"}} onClick={this.props.onEditListItemClick}/> <i className="trash icon" /></span>
       </div>
     );
   }
