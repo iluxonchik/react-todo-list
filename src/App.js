@@ -45,6 +45,7 @@ class TodoListDashboard extends React.Component {
     this.handleAddNewList = this.handleAddNewList.bind(this);
     this.handleAddNewItemToList = this.handleAddNewItemToList.bind(this);
     this.handleUpdateItemOnList = this.handleUpdateItemOnList.bind(this);
+    this.handleDeleteListItem = this.handleDeleteListItem.bind(this);
 
   }
 
@@ -115,6 +116,24 @@ class TodoListDashboard extends React.Component {
     this.setState({lists: updatedTodoListList});
   }
 
+  handleDeleteListItem(listId, itemId) {
+    console.log(`Deleting item with id ${itemId} from list with id ${listId}`)
+    const updatedTodoListList = this.state.lists.map((list) => {
+      if (list.id === listId) {
+        const updatedListItems = list.items.filter((item) => {
+          if (item.id === itemId) {
+            return false;
+          }
+          return true;
+        });
+        list.items = updatedListItems;
+      }
+      return list;
+    });
+
+    this.setState(updatedTodoListList);
+  }
+
   render() {
     console.log(this.state.lists)
     return (
@@ -123,6 +142,7 @@ class TodoListDashboard extends React.Component {
         onAddNewList={this.handleAddNewList}
         onAddNewItemToList={this.handleAddNewItemToList}
         onUpdateItemOnList={this.handleUpdateItemOnList}
+        onDeleteListItem={this.handleDeleteListItem}
        />
     );
   }
@@ -157,6 +177,7 @@ class TodoListHolder extends React.Component {
         items={list.items}
         onAddNewItemToList={this.props.onAddNewItemToList}
         onUpdateItemOnList={this.props.onUpdateItemOnList}
+        onDeleteListItem={this.props.onDeleteListItem}
       />
     ));
     return (
@@ -227,6 +248,7 @@ class TodoList extends React.Component {
         isDone={item.isDone}
         onUpdateItemOnList={this.props.onUpdateItemOnList}
         onAddNewItemToList={this.props.onAddNewItemToList}
+        onDeleteListItem={this.props.onDeleteListItem}
       />
     ));
     const listStyle = {
@@ -289,11 +311,12 @@ class ToggleableTodoListItem extends React.Component {
     } else {
       return (
         <PlainTodoListItem
-          listid={this.props.listId}
+          listId={this.props.listId}
           itemId={this.props.itemId}
           title={this.props.title}
           isDone={this.props.isDone}
           onEditListItemClick={this.handleEditListItemClick}
+          onDeleteListItem={this.props.onDeleteListItem}
         />
       );
     }
@@ -370,13 +393,20 @@ class EditingTodoListItem extends React.Component {
 class PlainTodoListItem extends React.Component {
   constructor(props) {
     super(props);
+
+    this.onDeleteListItemClick = this.onDeleteListItemClick.bind(this);
+  }
+
+  onDeleteListItemClick() {
+    console.log(`Trash icon clicked on item with id ${this.props.itemId}`)
+    this.props.onDeleteListItem(this.props.listId, this.props.itemId);
   }
 
   render() {
     return (
       <div className="item">
         {this.props.title}
-        <span><i className="edit icon" style={{marginLeft: "5pt"}} onClick={this.props.onEditListItemClick}/> <i className="trash icon" /></span>
+        <span><i className="edit icon" style={{marginLeft: "5pt"}} onClick={this.props.onEditListItemClick}/> <i className="trash icon" onClick={this.onDeleteListItemClick}/></span>
       </div>
     );
   }
