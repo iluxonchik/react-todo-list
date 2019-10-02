@@ -4,7 +4,7 @@ import uuid from 'uuidv4'
 class TodoListDashboard extends React.Component {
   constructor(props) {
     super(props);
-
+    console.log('Constructor')
     this.state = {
       lists: [
         {
@@ -37,12 +37,30 @@ class TodoListDashboard extends React.Component {
         },
       ]
     }
+
+    this.handleAddNewList = this.handleAddNewList.bind(this);
+
+  }
+
+  handleAddNewList(newListTitle) {
+     let listsWithNewList = [...this.state.lists]
+
+     const newList = {
+       id: uuid(),
+       title: newListTitle,
+       items: []
+     }
+
+     listsWithNewList.push(newList);
+     this.setState({lists: listsWithNewList});
   }
 
   render() {
+    console.log(this.state.lists)
     return (
       <TodoListHolder 
         lists={this.state.lists}
+        onAddNewList={this.handleAddNewList}
        />
     );
   }
@@ -51,6 +69,21 @@ class TodoListDashboard extends React.Component {
 class TodoListHolder extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      isOpen: false
+    }
+
+    this.handleCreateNewList = this.handleCreateNewList.bind(this);
+  }
+
+  handleCreateNewList(newListTitle) {
+    if(this.state.isOpen) {
+      this.props.onAddNewList(newListTitle);
+      this.setState({isOpen:false});
+    } else {
+      this.setState({isOpen:true});
+    }
   }
 
   render() {
@@ -63,13 +96,23 @@ class TodoListHolder extends React.Component {
       />
     ));
     return (
-      <div>
-        {todoLists}
+      <div className="content" syle={{margin: "22pt"}}>
+        <div className="ui card">
+          <div className="content">
+            <div className="header">{this.props.title}
+          </div>
+        </div>
+        <div className="ui list">
+          {todoLists}
+        </div>
 
         <ToggleableNewTodoList
-          isOpen={false}
+          isOpen={this.state.isOpen}
+          onCreateNewList={this.handleCreateNewList}
         />
       </div>
+     </div>
+
     );
   }
 }
@@ -77,21 +120,28 @@ class TodoListHolder extends React.Component {
 class ToggleableNewTodoList extends React.Component {
   constructor(props) {
     super(props);
-    
+
+    this._handleKeyDown = this._handleKeyDown.bind(this);
+  }
+
+  _handleKeyDown(e) {
+    if (e.key === 'Enter') {
+      this.props.onCreateNewList(this.refs.listTitle.value)
+    }
   }
 
   render() {
     if (!this.props.isOpen) {
       return (
-        <div class="ui teal labeled icon button">
+        <div className="ui teal labeled icon button" onClick={this.props.onCreateNewList}>
           New List
-          <i class="add icon" />
+          <i className="add icon"/>
         </div>
       );
     } else {
       return (
-        <div class="iu input focus">
-          <input type="text" placeholder="new todo item text" />
+        <div className="iu input focus">
+          <input type="text" placeholder="list title" ref="listTitle" onKeyDown={this._handleKeyDown}/>
         </div>
       )
     }
@@ -104,6 +154,7 @@ class TodoList extends React.Component {
   }
 
   render () {
+    console.log(this.props.title);
     const listItems = this.props.items.map((item) => (
       <ToggleableTodoListItem
         title={item.title}
@@ -115,13 +166,13 @@ class TodoList extends React.Component {
     }
     return (
       
-      <div class="content" style={listStyle}>
-        <div class="ui card">
-          <div class="content">
-            <div class="header">{this.props.title}
+      <div className="content" style={listStyle}>
+        <div className="ui card">
+          <div className="content">
+            <div className="header">{this.props.title}
           </div>
         </div>
-        <div class="ui list">
+        <div className="ui list">
           {listItems}
         </div>
         <ToggleableNewTodoListItem />
@@ -177,8 +228,8 @@ class ToggleableNewTodoListItem extends React.Component {
       )
     } else {
       return(
-        <button class="positive ui button">
-          <i class="plus circle icon"></i>
+        <button className="positive ui button">
+          <i className="plus square icon"></i>
         </button>
       );
     }
@@ -192,9 +243,9 @@ class EditingTodoListItem extends React.Component {
   }
 
   render() {
-    const deleteIcon = this.props.showDelete ? <i class="delete icon" /> : null
+    const deleteIcon = this.props.showDelete ? <i className="delete icon" /> : null
     return (
-      <div class="ui input focus">
+      <div className="ui input focus">
         <input type="text" text={this.props.title} /> {deleteIcon}
       </div>
     );
@@ -208,9 +259,9 @@ class PlainTodoListItem extends React.Component {
 
   render() {
     return (
-      <div class="item">
+      <div className="item">
         {this.props.title}
-        <i class="edit icon"></i>
+        <i className="edit icon" style={{marginLeft: "5pt"}}></i>
       </div>
     );
   }
