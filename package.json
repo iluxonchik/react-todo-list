@@ -5,7 +5,9 @@
   "dependencies": {
     "react": "^16.10.1",
     "react-dom": "^16.10.1",
-    "react-scripts": "3.1.2"
+    "react-scripts": "3.1.2",
+    "semantic-ui": "^2.4.2",
+    "uuidv4": "^5.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
