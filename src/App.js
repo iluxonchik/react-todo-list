@@ -92,17 +92,22 @@ class TodoListDashboard extends React.Component {
   handleUpdateItemOnList(listId, itemId, itemText, isDone) {
     console.log(`Updating item with id ${itemId} in list with id ${listId}... Setting text to ${itemText} and isDone is ${isDone}`)
     
-    if(!itemText) {
-      return;
-    }
-    
     const updatedTodoListList = this.state.lists.map((list) => 
     {
       if (list.id === listId) {
         const updatedListItems = list.items.map((item) => {
           if (item.id === itemId) {
-            item.title = itemText;
-            if (isDone !== undefined) {
+
+            // I know those if's are very dirty, but this is my first
+            // React App, that I purpusefully hacked together, just
+            // to get a raw taste of the framework
+            if (itemText) {
+              console.log(`\tchanging item's text to ${itemText}`)
+              item.title = itemText;
+            }
+            
+            if ((isDone !== null) && (isDone !== undefined)) {
+              console.log(`\tchanging item's isDone status to ${isDone}`)
               item.isDone = isDone;
             }
           }
@@ -292,7 +297,7 @@ class ToggleableTodoListItem extends React.Component {
   }
 
   handleUpdateItemOnList(listId, itemId, itemText) {
-    this.props.onUpdateItemOnList(listId, itemId, itemText)
+    this.props.onUpdateItemOnList(listId, itemId, itemText, null)
     this.setState({isEditing: false});
   }
 
@@ -317,6 +322,7 @@ class ToggleableTodoListItem extends React.Component {
           isDone={this.props.isDone}
           onEditListItemClick={this.handleEditListItemClick}
           onDeleteListItem={this.props.onDeleteListItem}
+          onUpdateItemOnList={this.props.onUpdateItemOnList}
         />
       );
     }
@@ -395,6 +401,7 @@ class PlainTodoListItem extends React.Component {
     super(props);
 
     this.onDeleteListItemClick = this.onDeleteListItemClick.bind(this);
+    this.onListItemClick = this.onListItemClick.bind(this);
   }
 
   onDeleteListItemClick() {
@@ -402,10 +409,15 @@ class PlainTodoListItem extends React.Component {
     this.props.onDeleteListItem(this.props.listId, this.props.itemId);
   }
 
+  onListItemClick() {
+    this.props.onUpdateItemOnList(this.props.listId, this.props.itemId, null, !this.props.isDone);
+  }
+
   render() {
+    const titleText = this.props.isDone?<s>{this.props.title}</s>:this.props.title
     return (
-      <div className="item">
-        {this.props.title}
+      <div className="item" onClick={this.onListItemClick}>
+        {titleText}
         <span><i className="edit icon" style={{marginLeft: "5pt"}} onClick={this.props.onEditListItemClick}/> <i className="trash icon" onClick={this.onDeleteListItemClick}/></span>
       </div>
     );
