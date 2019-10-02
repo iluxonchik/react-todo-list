@@ -80,13 +80,16 @@ class TodoListDashboard extends React.Component {
   }
 
   handleUpdateItemOnList(listId, itemId, itemText, isDone) {
+    console.log(`Updating item with id ${itemId} in list with id ${listId}... Setting text to ${itemText} and isDone is ${isDone}`)
     const updatedTodoListList = this.state.lists.map((list) => 
     {
       if (list.id === listId) {
         const updatedListItems = list.items.map((item) => {
           if (item.id === itemId) {
             item.title = itemText;
-            item.isDone = isDone;
+            if (isDone !== undefined) {
+              item.isDone = isDone;
+            }
           }
             return item;
         })
@@ -244,17 +247,28 @@ class ToggleableTodoListItem extends React.Component {
       isEditing: false
     }
 
+    this.handleEditListItemClick = this.handleEditListItemClick.bind(this);
+    this.handleUpdateItemOnList = this.handleUpdateItemOnList.bind(this);
+  }
+
+  handleEditListItemClick() {
+    this.setState({isEditing: true});
+  }
+
+  handleUpdateItemOnList(listId, itemId, itemText) {
+    this.props.onUpdateItemOnList(listId, itemId, itemText)
+    this.setState({isEditing: false});
   }
 
   render() {
     if (this.state.isEditing) {
       return (
         <EditingTodoListItem
-          listId={this.props.id}
+          listId={this.props.listId}
           itemId={this.props.itemId}
           title={this.props.title}
           showDelete={true}
-          onUpdateItemOnList={this.props.onUpdateItemOnList}
+          onUpdateItemOnList={this.handleUpdateItemOnList}
           onAddNewItemToList={this.props.onAddNewItemToList}
         />
       );
@@ -265,6 +279,7 @@ class ToggleableTodoListItem extends React.Component {
           itemId={this.props.itemId}
           title={this.props.title}
           isDone={this.props.isDone}
+          onEditListItemClick={this.handleEditListItemClick}
         />
       );
     }
@@ -320,7 +335,12 @@ class EditingTodoListItem extends React.Component {
 
   _handleKeyDown(e) {
     if (e.key === 'Enter') {
-      this.props.onAddNewItemToList(this.props.listId, this.refs.itemTitle.value)
+      if (typeof this.props.itemId == 'undefined') {
+        // itemId is not defined, so we're creating a new item
+        this.props.onAddNewItemToList(this.props.listId, this.refs.itemTitle.value)
+      } else {
+        this.props.onUpdateItemOnList(this.props.listId, this.props.itemId, this.refs.itemTitle.value);
+      }
     }
   }
 
@@ -328,7 +348,7 @@ class EditingTodoListItem extends React.Component {
     const deleteIcon = this.props.showDelete ? <i className="delete icon" /> : null
     return (
       <div className="ui input focus">
-        <input type="text" ref="itemTitle" onKeyDown={this._handleKeyDown} text={this.props.title} /> {deleteIcon}
+        <input type="text" ref="itemTitle" onKeyDown={this._handleKeyDown} defaultValue={this.props.title} /> {deleteIcon}
       </div>
     );
   }
@@ -343,7 +363,7 @@ class PlainTodoListItem extends React.Component {
     return (
       <div className="item">
         {this.props.title}
-        <i className="edit icon" style={{marginLeft: "5pt"}}></i>
+        <i className="edit icon" style={{marginLeft: "5pt"}} onClick={this.props.onEditListItemClick}/>
       </div>
     );
   }
