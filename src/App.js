@@ -5,43 +5,8 @@ import { throwStatement } from '@babel/types';
 class TodoListDashboard extends React.Component {
   constructor(props) {
     super(props);
-    console.log('Constructor')
-    this.state = {
-      lists: [
-        {
-          id: uuid(),
-          title: 'List 1',
-          items: [
-            {
-              id: uuid(),
-              title: 'ToDo Item 1',
-              isDone: false,
-            },
-            {
-              id: uuid(),
-              title: 'ToDo Item 2',
-              isDone: true,
-            }
-          ]
-        },
-        {
-          id: uuid(),
-          title: 'List 2',
-          items: [
-            {
-              id : uuid(),
-              title: 'ToDo Item 1',
-              isDone: true,
-            },
-            {
-              id: uuid(),
-              title: 'ToDo Item 2',
-              isDone: true,
-            }
-          ]
-        },
-      ]
-    }
+
+    this.state = {lists: []}
 
     this.handleAddNewList = this.handleAddNewList.bind(this);
     this.handleAddNewItemToList = this.handleAddNewItemToList.bind(this);
@@ -49,6 +14,19 @@ class TodoListDashboard extends React.Component {
     this.handleDeleteListItem = this.handleDeleteListItem.bind(this);
     this.handleUpdateListTitle = this.handleUpdateListTitle.bind(this);
     this.handleDeleteList = this.handleDeleteList.bind(this);
+    this.setAndPresistState = this.setAndPresistState.bind(this);
+  }
+
+  componentDidMount() {
+    let state = localStorage.getItem('state');
+    state = state? JSON.parse(state): {lists: []};
+    console.log(`Initial state: ${state}`)
+    this.setState(state);
+  }
+
+  setAndPresistState(newState) {
+    localStorage.setItem('state', JSON.stringify(newState));
+    this.setState(newState);
   }
 
   handleAddNewList(newListTitle) {
@@ -65,7 +43,7 @@ class TodoListDashboard extends React.Component {
      }
 
      listsWithNewList.push(newList);
-     this.setState({lists: listsWithNewList});
+     this.setAndPresistState({lists: listsWithNewList});
   }
 
   handleAddNewItemToList(listId, newItemText) {
@@ -88,7 +66,7 @@ class TodoListDashboard extends React.Component {
         return list;
     });
 
-    this.setState({lists: updatedTodoListList});
+    this.setAndPresistState({lists: updatedTodoListList});
   }
 
   handleUpdateItemOnList(listId, itemId, itemText, isDone) {
@@ -120,7 +98,7 @@ class TodoListDashboard extends React.Component {
         return list;
     });
 
-    this.setState({lists: updatedTodoListList});
+    this.setAndPresistState({lists: updatedTodoListList});
   }
 
   handleDeleteListItem(listId, itemId) {
@@ -138,7 +116,7 @@ class TodoListDashboard extends React.Component {
       return list;
     });
 
-    this.setState({lists: updatedTodoListList});
+    this.setAndPresistState({lists: updatedTodoListList});
   }
 
   handleUpdateListTitle(listId, newTitle) {
@@ -161,12 +139,13 @@ class TodoListDashboard extends React.Component {
       return true;
     });
 
-    this.setState({lists: newTodoListsList});
+    this.setAndPresistState({lists: newTodoListsList});
   }
 
   render() {
     console.log(this.state.lists)
     return (
+      <div className="ui two column centered grid">
       <TodoListHolder 
         lists={this.state.lists}
         onAddNewList={this.handleAddNewList}
@@ -176,6 +155,7 @@ class TodoListDashboard extends React.Component {
         onUpdateListTitle={this.handleUpdateListTitle}
         onDeleteListClick={this.handleDeleteList}
        />
+      </div>
     );
   }
 }
@@ -217,7 +197,7 @@ class TodoListHolder extends React.Component {
       />
     ));
     return (
-      <div className="content" syle={{margin: "22pt"}}>
+      <div className="content" style={{margin: "22pt"}}>
         <div className="ui card">
           <div className="content">
             <div className="header">{this.props.title}
