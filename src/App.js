@@ -48,6 +48,7 @@ class TodoListDashboard extends React.Component {
     this.handleUpdateItemOnList = this.handleUpdateItemOnList.bind(this);
     this.handleDeleteListItem = this.handleDeleteListItem.bind(this);
     this.handleUpdateListTitle = this.handleUpdateListTitle.bind(this);
+    this.handleDeleteList = this.handleDeleteList.bind(this);
   }
 
   handleAddNewList(newListTitle) {
@@ -152,6 +153,17 @@ class TodoListDashboard extends React.Component {
     this.setState({lists: newTodoListsList});
   }
 
+  handleDeleteList(listId) {
+    const newTodoListsList = this.state.lists.filter((list) => {
+      if (list.id === listId) {
+        return false;
+      }
+      return true;
+    });
+
+    this.setState({lists: newTodoListsList});
+  }
+
   render() {
     console.log(this.state.lists)
     return (
@@ -162,6 +174,7 @@ class TodoListDashboard extends React.Component {
         onUpdateItemOnList={this.handleUpdateItemOnList}
         onDeleteListItem={this.handleDeleteListItem}
         onUpdateListTitle={this.handleUpdateListTitle}
+        onDeleteListClick={this.handleDeleteList}
        />
     );
   }
@@ -200,6 +213,7 @@ class TodoListHolder extends React.Component {
         onUpdateItemOnList={this.props.onUpdateItemOnList}
         onDeleteListItem={this.props.onDeleteListItem}
         onUpdateListTitle={this.props.onUpdateListTitle}
+        onDeleteListClick={this.props.onDeleteListClick}
       />
     ));
     return (
@@ -262,6 +276,7 @@ class ToggleableToDoListTitle extends React.Component {
     this.state = {isEditingTitle: false};
     
     this.onListTitleClick = this.onListTitleClick.bind(this);
+    this.handleDeleteListClick = this.handleDeleteListClick.bind(this);
     this._handleKeyDown = this._handleKeyDown.bind(this);
   }
 
@@ -280,6 +295,9 @@ class ToggleableToDoListTitle extends React.Component {
     }
   }
 
+  handleDeleteListClick() {
+    this.props.onDeleteListClick(this.props.listId)
+  }
 
   render() {
     if (this.state.isEditingTitle) {
@@ -288,7 +306,7 @@ class ToggleableToDoListTitle extends React.Component {
       );
     } else {
       return(
-        <div className="header" onClick={this.onListTitleClick}>{this.props.title}</div>
+        <div className="header"><i className="trash icon" onClick={this.handleDeleteListClick}/><span onClick={this.onListTitleClick}>{this.props.title}</span></div>
       );
     }
     
@@ -332,6 +350,7 @@ class TodoList extends React.Component {
               title={this.props.title}
               onListTitleClick={this.props.onListTitleClick}
               onUpdateListTitle={this.props.onUpdateListTitle}
+              onDeleteListClick={this.props.onDeleteListClick}
             />
         </div>
         <div className="ui list">
