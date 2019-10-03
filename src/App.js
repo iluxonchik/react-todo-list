@@ -1,5 +1,6 @@
 import React from 'react';
 import uuid from 'uuidv4'
+import { throwStatement } from '@babel/types';
 
 class TodoListDashboard extends React.Component {
   constructor(props) {
@@ -46,6 +47,7 @@ class TodoListDashboard extends React.Component {
     this.handleAddNewItemToList = this.handleAddNewItemToList.bind(this);
     this.handleUpdateItemOnList = this.handleUpdateItemOnList.bind(this);
     this.handleDeleteListItem = this.handleDeleteListItem.bind(this);
+    this.handleUpdateListTitle = this.handleUpdateListTitle.bind(this);
   }
 
   handleAddNewList(newListTitle) {
@@ -135,7 +137,19 @@ class TodoListDashboard extends React.Component {
       return list;
     });
 
-    this.setState(updatedTodoListList);
+    this.setState({lists: updatedTodoListList});
+  }
+
+  handleUpdateListTitle(listId, newTitle) {
+    console.log(`Updating list title for list with id ${listId} to ${newTitle}`)
+    const newTodoListsList = this.state.lists.map((list) => {
+      if (list.id === listId) {
+        list.title = newTitle;
+      }
+      return list;
+    });
+
+    this.setState({lists: newTodoListsList});
   }
 
   render() {
@@ -147,6 +161,7 @@ class TodoListDashboard extends React.Component {
         onAddNewItemToList={this.handleAddNewItemToList}
         onUpdateItemOnList={this.handleUpdateItemOnList}
         onDeleteListItem={this.handleDeleteListItem}
+        onUpdateListTitle={this.handleUpdateListTitle}
        />
     );
   }
@@ -157,7 +172,8 @@ class TodoListHolder extends React.Component {
     super(props);
 
     this.state = {
-      isOpen: false
+      isOpen: false,
+      isEditingTitle: false
     }
 
     this.handleCreateNewList = this.handleCreateNewList.bind(this);
@@ -179,9 +195,11 @@ class TodoListHolder extends React.Component {
         key={list.id}
         title={list.title}
         items={list.items}
+        isEditingTitle={this.state.isEditingTitle}
         onAddNewItemToList={this.props.onAddNewItemToList}
         onUpdateItemOnList={this.props.onUpdateItemOnList}
         onDeleteListItem={this.props.onDeleteListItem}
+        onUpdateListTitle={this.props.onUpdateListTitle}
       />
     ));
     return (
@@ -237,13 +255,58 @@ class ToggleableNewTodoList extends React.Component {
   }
 }
 
+class ToggleableToDoListTitle extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {isEditingTitle: false};
+    
+    this.onListTitleClick = this.onListTitleClick.bind(this);
+    this._handleKeyDown = this._handleKeyDown.bind(this);
+  }
+
+  onListTitleClick() {
+    this.setState({isEditingTitle: true});
+  }
+
+  _handleKeyDown(e) {
+    if (e.key === 'Enter') {
+      this.props.onUpdateListTitle(this.props.listId, this.refs.listTitle.value);
+      this.setState({isEditingTitle: false});
+    }
+
+    if (e.key === 'Escape') {
+      this.setState({isEditingTitle: false});
+    }
+  }
+
+
+  render() {
+    if (this.state.isEditingTitle) {
+      return(
+        <input type="text" ref="listTitle" onKeyDown={this._handleKeyDown} defaultValue={this.props.title}/>
+      );
+    } else {
+      return(
+        <div className="header" onClick={this.onListTitleClick}>{this.props.title}</div>
+      );
+    }
+    
+  }
+}
+
 class TodoList extends React.Component {
   constructor(props) {
     super(props);
+
+    this.onListItemClick = this.onListItemClick.bind(this);
+  }
+
+  onListItemClick() {
+    this.props.onListItemClick();
   }
 
   render () {
-    console.log(this.props.title);
     const listItems = this.props.items.map((item) => (
       <ToggleableTodoListItem
         listId={this.props.id}
@@ -263,8 +326,13 @@ class TodoList extends React.Component {
       <div className="content" style={listStyle}>
         <div className="ui card">
           <div className="content">
-            <div className="header">{this.props.title}
-          </div>
+            <ToggleableToDoListTitle
+              listId={this.props.id}
+              isEditingTitle={this.props.isEditingTitle}
+              title={this.props.title}
+              onListTitleClick={this.props.onListTitleClick}
+              onUpdateListTitle={this.props.onUpdateListTitle}
+            />
         </div>
         <div className="ui list">
           {listItems}
