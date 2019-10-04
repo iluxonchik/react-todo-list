@@ -12,6 +12,10 @@ This a simple ToDo List application written in ReactJS. It has the following fun
 * Rename items in todo lists
 * All of the data is persisted in local storage, so your data survives page reloads
 
+You can use the provided `Dockerfile` to deploy this amazing application.
+For example, try [AWS Fargate](https://aws.amazon.com/fargate/), which is where
+I deployed it.
+
 ## Disclaimer
 
 This is my very first React application that I wrote after playing around with the
